@@ -1,14 +1,13 @@
 <?php
-$servername = "localhost";
-$username = "muusikapood";
-$password = "";
-$dbname = "muusikapood";
-
-// Loome ühenduse
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-// Kontrollime ühendust
-if ($conn->connect_error) {
-    die("Ühenduse loomine ebaõnnestus: " . $conn->connect_error);
+//sinu andmed
+$db_server = 'localhost';
+$db_andmebaas = 'muusikapood';
+$db_kasutaja = 'dmeijel';
+$db_salasona = 'dmeijel';
+//ühendus andmebaasiga
+$yhendus = mysqli_connect($db_server, $db_kasutaja, $db_salasona, $db_andmebaas);
+//ühenduse kontroll
+if(!$yhendus){
+ die('Ei saa ühendust andmebaasiga');
 }
 ?>
