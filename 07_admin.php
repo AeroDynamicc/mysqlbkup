@@ -1,45 +1,51 @@
 <?php
 session_start();
+include('config.php');
 
-include('config.php'); // Lisame andmebaasi konfiguratsioonifaili
+if (!isset($_SESSION['tuvastamine']) || $_SESSION['tuvastamine'] != 'misiganes') {
+    header('Location: 07_login.php');
+    exit();
+}
 
-// Kasutaja registreerimise vormi töötlemine
+$message = '';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $kasutajanimi = htmlspecialchars(trim($_POST['kasutajanimi']));
-    $parool = htmlspecialchars(trim($_POST['parool']));
-    $email = htmlspecialchars(trim($_POST['email']));
+    $login = $_POST['login'];
+    $parool = $_POST['parool'];
 
-    // Parooli pikkuse kontroll
-    if (strlen($parool) < 8) {
-        echo "Parool peab olema vähemalt 8 tähemärki pikk.";
+    if (strlen($parool) < 6) {
+        $message = "Parool peab sisaldama vähemalt 6 tähte";
     } else {
-        // Parooli krüpteerimine
-        $hash = password_hash($parool, PASSWORD_DEFAULT);
-
-        // Lisame kasutaja andmebaasi
-        $query = "INSERT INTO kasutajad (kasutaja, parool, email) VALUES ('$kasutajanimi', '$hash', '$email')";
-        $result = mysqli_query($conn, $query);
-
-        if ($result) {
-            echo "Uus kasutaja on edukalt registreeritud!";
-        } else {
-            echo "Kasutaja registreerimine ebaõnnestus. Palun proovi uuesti.";
+        // Ühendume andmebaasiga
+        $yhendus = mysqli_connect($db_server, $db_kasutaja, $db_salasona, $db_andmebaas);
+        // Kontrollime ühendust
+        if (!$yhendus) {
+            die("Ühenduse loomine ebaõnnestus: " . mysqli_connect_error());
         }
+
+        $sql = "INSERT INTO kasutajad (login, parool) VALUES ('$login', '$parool')";
+
+        if (mysqli_query($yhendus, $sql)) {
+            $message = "Uus kasutaja on edukalt lisatud!";
+        } else {
+            $message = "Viga andmebaasi lisamisel: " . mysqli_error($yhendus);
+        }
+
+        mysqli_close($yhendus);
     }
 }
+
 ?>
 
-<h3>Tere tulemast admini lehele.</h3>
-<h3>See administraatori leht on kaitstud.</h3>
-
-<!-- Registreerimisvorm -->
-<h2>Registreeri uus kasutaja</h2>
+<h1>Registreeri uus kasutaja</h1>
+<!-- HTML vorm kasutaja registreerimiseks -->
 <form action="" method="post">
-    <label for="kasutajanimi">Kasutajanimi:</label>
-    <input type="text" id="kasutajanimi" name="kasutajanimi" required><br>
-    <label for="parool">Parool:</label>
-    <input type="password" id="parool" name="parool" required><br>
-    <label for="email">Email:</label>
-    <input type="email" id="email" name="email" required><br>
+    Login: <input type="text" name="login"><br>
+    Password: <input type="password" name="parool"><br>
     <input type="submit" value="Registreeri">
 </form>
+
+<!-- Kuvame veateate, kui parooli pikkus on alla 6 tähe -->
+<?php if (!empty($message)) echo "<p>$message</p>"; ?>
+
+<a href="07_logout.php">Logi välja</a>

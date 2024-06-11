@@ -1,12 +1,15 @@
 <?php
 session_start();
+include('config.php');
 if (!isset($_SESSION['tuvastamine'])) {
- header('Location: 07_login.php');
- exit();
+    header('Location: 07_login.php');
+    exit();
 }
-if(isset($_POST['logout'])){
- session_destroy();
- header('Location: 07_admin.php');
- exit();
-}
+
+// Logi välja
+session_destroy();
+
+// Suuna tagasi login lehele
+header('Location: 07_login.php');
+exit();
 ?>
